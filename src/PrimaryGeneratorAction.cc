@@ -99,7 +99,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   //         uz = cosTheta; 
 
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0,0,1));
-  fParticleGun->SetParticleEnergy(8.8*keV);
+  fParticleGun->SetParticleEnergy(8.766*keV);
   
   fParticleGun->SetParticlePosition(G4ThreeVector(0., 0., z0));
   fParticleGun->GeneratePrimaryVertex(anEvent);

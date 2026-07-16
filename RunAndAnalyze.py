@@ -54,7 +54,7 @@ def generate_macro(build_dir, kapton_um, air_m, primaries):
 
 /gun/polarization 0. 0. -1.
 /gun/particle gamma
-/gun/energy 8.8 keV
+/gun/energy 8.766 keV
 
 /analysis/setFileName polar
 /analysis/h1/set 1  110  0     11 MeV	#gamma energy
@@ -201,14 +201,14 @@ def write_summary_report(file_path, kapton_um, air_m, primaries, hits, transmiss
     """Writes a professional, clean markdown summary report."""
     content = f"""# X-ray Transmission Simulation Summary
 
-This simulation calculates the transmission of {primaries:,.0f} primary X-ray gammas ($8.8\\text{{ keV}}$) through a Kapton window of {kapton_um} $\\mu\\text{{m}}$ thickness followed by an Air gap of {air_m} $\\text{{m}}$ thickness.
+This simulation calculates the transmission of {primaries:,.0f} primary X-ray gammas ($8.766\\text{{ keV}}$) through a Kapton window of {kapton_um} $\\mu\\text{{m}}$ thickness followed by an Air gap of {air_m} $\\text{{m}}$ thickness.
 
 ## Parameters
 
 | Parameter | Value |
 | :--- | :--- |
 | **Primary Particle** | Gamma ($\\gamma$) |
-| **Primary Energy** | $8.8\\text{{ keV}}$ |
+| **Primary Energy** | $8.766\\text{{ keV}}$ |
 | **Primary Beam Count** | {primaries:,.0f} |
 | **Kapton Thickness** | {kapton_um} $\\mu\\text{{m}}$ |
 | **Air Volume Thickness** | {air_m} $\\text{{m}}$ |
@@ -220,7 +220,7 @@ This simulation calculates the transmission of {primaries:,.0f} primary X-ray ga
 
 ## Remarks
 
-The transmission calculation represents the fraction of primary $8.8\\text{{ keV}}$ X-ray photons that successfully traverse both the Kapton window and the Air gap without being absorbed or scattered away from the Screen volume.
+The transmission calculation represents the fraction of primary $8.766\\text{{ keV}}$ X-ray photons that successfully traverse both the Kapton window and the Air gap without being absorbed or scattered away from the Screen volume.
 All plots, data arrays (`.npz`), and simulation configurations are stored in the same folder.
 """
     with open(file_path, "w") as f:

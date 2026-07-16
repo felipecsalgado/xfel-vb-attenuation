@@ -17,7 +17,7 @@ def build_project(workspace_dir):
     os.makedirs(build_dir, exist_ok=True)
     
     # Check if compiled binary exists
-    binary_path = os.path.join(build_dir, "Pol01")
+    binary_path = os.path.join(build_dir, "XFELVB")
     
     # We always run cmake and make to ensure any C++ changes are compiled
     print(">>> Configuring and compiling Geant4 C++ project...")
@@ -82,7 +82,7 @@ def generate_macro(build_dir, kapton_um, air_m, primaries):
 
 def run_simulation(build_dir, threads):
     """Runs the Geant4 simulation binary with the macro and thread arguments."""
-    binary = "./Pol01"
+    binary = "./XFELVB"
     macro = "xray.mac"
     print(f">>> Running simulation: {binary} {macro} {threads} (Cwd: {build_dir})")
     try:
@@ -201,7 +201,7 @@ def write_summary_report(file_path, kapton_um, air_m, primaries, hits, transmiss
     """Writes a professional, clean markdown summary report."""
     content = f"""# X-ray Transmission Simulation Summary
 
-This simulation calculates the transmission of primary X-ray gammas ($8.8\\text{{ keV}}$) through a Kapton window followed by an Air gap.
+This simulation calculates the transmission of {primaries:,.0f} primary X-ray gammas ($8.8\\text{{ keV}}$) through a Kapton window of {kapton_um} $\\mu\\text{{m}}$ thickness followed by an Air gap of {air_m} $\\text{{m}}$ thickness.
 
 ## Parameters
 

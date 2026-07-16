@@ -1,7 +1,7 @@
 #----------------------------------------------------------------------------
 # Setup the project
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
-project(Pol01)
+project(XFELVB)
 
 #----------------------------------------------------------------------------
 # Find Geant4 package, activating all available UI and Vis drivers by default
@@ -31,19 +31,19 @@ file(GLOB headers ${PROJECT_SOURCE_DIR}/include/*.hh)
 #----------------------------------------------------------------------------
 # Add the executable, and link it to the Geant4 libraries
 #
-add_executable(Pol01 Pol01.cc ${sources} ${headers})
-target_link_libraries(Pol01 ${Geant4_LIBRARIES} )
+add_executable(XFELVB XFELVB.cc ${sources} ${headers})
+target_link_libraries(XFELVB ${Geant4_LIBRARIES} )
 
 #----------------------------------------------------------------------------
 # Copy all scripts to the build directory, i.e. the directory in which we
-# build Pol01. This is so that we can run the executable directly because it
+# build XFELVB. This is so that we can run the executable directly because it
 # relies on these scripts being in the current working directory.
 #
-set(Pol01_SCRIPTS
-    heprep2.mac histo.mac histos.mac pol01.in pol01.out vis.mac gui.mac xray.mac
+set(XFELVB_SCRIPTS
+    vis.mac gui.mac xray.mac
   )
 
-foreach(_script ${Pol01_SCRIPTS})
+foreach(_script ${XFELVB_SCRIPTS})
   configure_file(
     ${PROJECT_SOURCE_DIR}/${_script}
     ${PROJECT_BINARY_DIR}/${_script}
@@ -54,4 +54,4 @@ endforeach()
 #----------------------------------------------------------------------------
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
-install(TARGETS Pol01 DESTINATION bin)
+install(TARGETS XFELVB DESTINATION bin)

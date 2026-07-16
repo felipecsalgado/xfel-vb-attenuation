@@ -4,7 +4,7 @@ This Geant4 simulation project calculates the transmission of primary polarized 
 
 ## Project Structure
 
-*   `Pol01.cc`: Main program file initializing the multi-threaded run manager, physics list, and action classes.
+*   `XFELVB.cc`: Main program file initializing the multi-threaded run manager, physics list, and action classes.
 *   `RunAndAnalyze.py`: Python automation runner. It configures and compiles the project, generates the macro file, executes the Geant4 simulation, analyzes the ROOT ntuples, and outputs plots, binary data, and markdown summaries.
 *   `src/`: C++ source implementations for geometry construction, stepping action, and tracking/run management.
 *   `include/`: C++ headers matching the source definitions.
@@ -78,6 +78,6 @@ make -j$(sysctl -n hw.ncpu)
 #### 2. Run the C++ Binary
 Execute the simulation binary with a macro file and the number of threads:
 ```bash
-./Pol01 xray.mac 4
+./XFELVB xray.mac 4
 ```
 Where `xray.mac` is your configuration macro and `4` is the number of threads.

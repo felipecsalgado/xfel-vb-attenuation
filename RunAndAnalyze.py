@@ -129,8 +129,17 @@ def analyze_results(root_file, output_dir, save_basename, kapton_um, air_m, prim
     energy_filtered = energy[energy_idx]
     
     # Statistics calculations
-    n_particles = len(energy)
-    transmission_pct = (n_particles / primaries) * 100.0
+    if "Summary;1" in file:
+        summary_tree = file["Summary;1"]
+        primaries_arr = summary_tree["primaries"].array(library="np")
+        hits_arr = summary_tree["hits"].array(library="np")
+        total_primaries = float(np.sum(primaries_arr))
+        total_hits = float(np.sum(hits_arr))
+        transmission_pct = (total_hits / total_primaries) * 100.0
+        n_particles = int(total_hits)
+    else:
+        n_particles = len(energy)
+        transmission_pct = (n_particles / primaries) * 100.0
     
     # Plotting: figure with 2 subplots (2D spatial distribution and 1D energy histogram)
     print(">>> Generating plots...")

@@ -99,6 +99,7 @@ private:
   G4AnalysisManager*      fAnalysisManager;
   
   G4int fTotalEventCount;
+  G4int fNumHits;
 
   ParticleStatistics fPhotonStats;
   ParticleStatistics fElectronStats;

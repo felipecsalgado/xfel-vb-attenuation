@@ -47,6 +47,7 @@
 
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
+#include "Randomize.hh"
 #include <iomanip>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -55,7 +56,7 @@ RunAction::RunAction(DetectorConstruction* det, PrimaryGeneratorAction* prim)
 : G4UserRunAction(),
   fGamma(0), fElectron(0), fPositron(0),
   fDetector(det), fPrimary(prim), fProcCounter(0), fAnalysisManager(0), 
-  fTotalEventCount(0),
+  fTotalEventCount(0), fNumHits(0),
   fPhotonStats(), fElectronStats(), fPositronStats()
 {
   fGamma = G4Gamma::Gamma();
@@ -83,6 +84,7 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
   if (fProcCounter) delete fProcCounter;
   fProcCounter = new ProcessesCount;
   fTotalEventCount = 0;
+  fNumHits = 0;
   fPhotonStats.Clear();
   fElectronStats.Clear();
   fPositronStats.Clear();
@@ -100,6 +102,7 @@ void RunAction::FillData(const G4ParticleDefinition* particle,
 {
   G4int id = -1;
   if (particle == fGamma) { 
+    fNumHits++;
     fPhotonStats.FillData(kinEnergy, costheta, longitudinalPolarization);
     if(fAnalysisManager) { id = 1; } 
   } else if (particle == fElectron) { 
@@ -114,6 +117,14 @@ void RunAction::FillData(const G4ParticleDefinition* particle,
     fAnalysisManager->FillH1(id+1,costheta,1.0);
     fAnalysisManager->FillH1(id+2,phi,1.0);
     fAnalysisManager->FillH1(id+3,longitudinalPolarization,1.0);  
+    
+    G4int totalEvents = G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed();
+    G4double prescale = 1.0;
+    if (totalEvents > 200000) {
+      prescale = 200000.0 / totalEvents;
+    }
+    
+    if (G4UniformRand() < prescale) {
     	// fill tuple for gamma
     	fAnalysisManager->FillNtupleDColumn(1, 0, x/um);
     	fAnalysisManager->FillNtupleDColumn(1, 1, y/um);
@@ -123,9 +134,9 @@ void RunAction::FillData(const G4ParticleDefinition* particle,
     	fAnalysisManager->FillNtupleDColumn(1, 5, pz);
     	fAnalysisManager->FillNtupleDColumn(1, 6, kinEnergy/keV);
     	fAnalysisManager->FillNtupleDColumn(1, 7, id);
-    	fAnalysisManager->AddNtupleRow();
-    	//G4cout << "Gamma Tuple  " << kinEnergy/keV << " keV." << G4endl;
+    	fAnalysisManager->AddNtupleRow(1);
     }
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -194,21 +205,27 @@ void RunAction::BookHisto()
   fAnalysisManager->SetH2Activation(1, true); //2
   
   
-  //***************************//
-  //******** Create nTuples *******//
-  //analysisManager->CreateNtuple("GeminiGamma", "Plane1 at 1x1cm2");
-  fAnalysisManager->SetFirstNtupleId(1);
-  //id 1
-  fAnalysisManager->CreateNtuple("Gamma", "Hits");
-  fAnalysisManager->CreateNtupleDColumn("x"); // column Id = 0
-  fAnalysisManager->CreateNtupleDColumn("y"); // column Id = 1
-  fAnalysisManager->CreateNtupleDColumn("z"); // column Id = 2
-  fAnalysisManager->CreateNtupleDColumn("px"); // column Id = 3
-  fAnalysisManager->CreateNtupleDColumn("py"); // column Id = 4
-  fAnalysisManager->CreateNtupleDColumn("pz"); // column Id = 5
-  fAnalysisManager->CreateNtupleDColumn("energy"); // column Id = 6
-  fAnalysisManager->CreateNtupleDColumn("particle"); // column Id = 7
-  fAnalysisManager->FinishNtuple();  
+    //***************************//
+    //******** Create nTuples *******//
+    //analysisManager->CreateNtuple("GeminiGamma", "Plane1 at 1x1cm2");
+    fAnalysisManager->SetFirstNtupleId(1);
+    //id 1
+    fAnalysisManager->CreateNtuple("Gamma", "Hits");
+    fAnalysisManager->CreateNtupleDColumn("x"); // column Id = 0
+    fAnalysisManager->CreateNtupleDColumn("y"); // column Id = 1
+    fAnalysisManager->CreateNtupleDColumn("z"); // column Id = 2
+    fAnalysisManager->CreateNtupleDColumn("px"); // column Id = 3
+    fAnalysisManager->CreateNtupleDColumn("py"); // column Id = 4
+    fAnalysisManager->CreateNtupleDColumn("pz"); // column Id = 5
+    fAnalysisManager->CreateNtupleDColumn("energy"); // column Id = 6
+    fAnalysisManager->CreateNtupleDColumn("particle"); // column Id = 7
+    fAnalysisManager->FinishNtuple();  
+    
+    //id 2
+    fAnalysisManager->CreateNtuple("Summary", "Run Summary");
+    fAnalysisManager->CreateNtupleIColumn("primaries");
+    fAnalysisManager->CreateNtupleIColumn("hits");
+    fAnalysisManager->FinishNtuple();
   
 }
 
@@ -298,6 +315,11 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
 
   //restore default format         
   G4cout.precision(prec);         
+  
+  // Fill summary ntuple for this worker thread
+  fAnalysisManager->FillNtupleIColumn(2, 0, NbOfEvents);
+  fAnalysisManager->FillNtupleIColumn(2, 1, fNumHits);
+  fAnalysisManager->AddNtupleRow(2);
 
   // write out histograms  
   SaveHisto(NbOfEvents);

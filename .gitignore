@@ -11,6 +11,8 @@ install_manifest.txt
 
 # Data and Results
 results/
+build/
+cuild-*/
 *.npz
 *.npy
 

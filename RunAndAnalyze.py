@@ -11,6 +11,16 @@ from matplotlib.colors import LogNorm
 from matplotlib.ticker import MultipleLocator
 from matplotlib import cm
 
+def get_run_prefix():
+    """Returns the command prefix to run binaries/commands (e.g. micromamba run)."""
+    if "geant4" in os.environ.get("CONDA_PREFIX", ""):
+        return []
+    if shutil.which("micromamba"):
+        return ["micromamba", "run", "-n", "geant4"]
+    elif shutil.which("conda"):
+        return ["conda", "run", "-n", "geant4"]
+    return []
+
 def build_project(workspace_dir):
     """Ensures the C++ project is configured and compiled."""
     build_dir = os.path.join(workspace_dir, "build")
@@ -23,14 +33,17 @@ def build_project(workspace_dir):
     print(">>> Configuring and compiling Geant4 C++ project...")
     try:
         # Run cmake with prefix path to micromamba environment to find EXPAT and other libs
-        env_prefix = "/Users/felip/.local/share/mamba/envs/geant4"
+        env_prefix = os.environ.get("CONDA_PREFIX", "/Users/felip/.local/share/mamba/envs/geant4")
+        prefix = get_run_prefix()
+        # Find local CPU thread count for make if threads is not passed (use min of 4 or CPU count)
+        build_threads = max(1, os.cpu_count() - 1) if os.cpu_count() else 4
         subprocess.run(
-            ["micromamba", "run", "-n", "geant4", "cmake", f"-DCMAKE_PREFIX_PATH={env_prefix}", ".."],
+            prefix + ["cmake", f"-DCMAKE_PREFIX_PATH={env_prefix}", ".."],
             cwd=build_dir, check=True
         )
         # Compile using make
         subprocess.run(
-            ["micromamba", "run", "-n", "geant4", "make", "-j4"],
+            prefix + ["make", f"-j{build_threads}"],
             cwd=build_dir, check=True
         )
         print(">>> C++ project built successfully.")
@@ -86,8 +99,9 @@ def run_simulation(build_dir, threads):
     macro = "xray.mac"
     print(f">>> Running simulation: {binary} {macro} {threads} (Cwd: {build_dir})")
     try:
+        prefix = get_run_prefix()
         subprocess.run(
-            ["micromamba", "run", "-n", "geant4", binary, macro, str(threads)],
+            prefix + [binary, macro, str(threads)],
             cwd=build_dir, check=True
         )
         print(">>> Simulation run completed successfully.")

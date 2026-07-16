@@ -49,11 +49,20 @@ You can configure geometry and beam parameters dynamically using Geant4 messenge
 *   C++ Compiler (Clang or GCC with C++17 support) and CMake (version 3.10 or higher).
 *   Python 3 environment with package requirements: `uproot`, `numpy`, `matplotlib`.
 
-### Setup Environment (Example using Micromamba/Conda)
+### Setup Environment
 
-To install Python dependencies in your conda/micromamba environment:
+You can recreate the complete environment containing all dependencies (including Geant4, C++ compiler libraries, Python, and plotting libraries) using the provided `environment.yml` file.
+
+#### Using Micromamba:
 ```bash
-micromamba install -n geant4 python uproot numpy matplotlib
+micromamba env create -f environment.yml
+micromamba activate geant4
+```
+
+#### Using Conda:
+```bash
+conda env create -f environment.yml
+conda activate geant4
 ```
 
 ### Option A: Complete Automation (Recommended)

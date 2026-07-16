@@ -285,7 +285,7 @@ def main():
     run_simulation(build_dir, args.threads)
     
     # 5. Locate and process the ROOT output
-    root_file = os.path.join(build_dir, "compton.root")
+    root_file = os.path.join(build_dir, "results.root")
     analyze_results(root_file, output_dir, save_basename, args.kapton, args.air, args.primaries)
 
 if __name__ == "__main__":

@@ -28,7 +28,7 @@ python RunAndAnalyze.py [options]
 *   `--air <value>`: Air gap volume thickness in meters (default: `1.0`).
 *   `--threads <value>`: Number of threads to use in Geant4 multithreading mode (default: total logical CPU cores).
 *   `--primaries <value>`: Number of primary gamma particles to simulate (default: `2.1e9`). Supports scientific notation (e.g., `1e5`).
-*   `--skip-sim`: Run data analysis and plot generation on the existing `compton.root` file without triggering a new Geant4 run.
+*   `--skip-sim`: Run data analysis and plot generation on the existing `results.root` file without triggering a new Geant4 run.
 
 ### Geant4 C++ Macro Commands
 

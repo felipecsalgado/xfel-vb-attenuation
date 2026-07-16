@@ -89,7 +89,7 @@ void RunAction::BeginOfRunAction(const G4Run* aRun)
   fElectronStats.Clear();
   fPositronStats.Clear();
 
-  fAnalysisManager->OpenFile("compton.root");
+  fAnalysisManager->OpenFile("results.root");
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -152,7 +152,7 @@ void RunAction::BookHisto()
   fAnalysisManager->SetVerboseLevel(1);
 
   // Open file histogram file
-  fAnalysisManager->SetFileName("compton");
+  fAnalysisManager->SetFileName("results");
   fAnalysisManager->SetFirstHistoId(1);
   
 

@@ -103,7 +103,7 @@ def generate_macro(build_dir, kapton_um, air_m, primaries):
     print(f">>> Generated macro: {macro_path} and {root_macro_path}")
     return macro_path
 
-def run_simulation(build_dir, threads, primaries, env_name="geant4"):
+def run_simulation(build_dir, threads, primaries, env_name="geant4", log_path=None):
     """Runs the Geant4 simulation binary with the macro and thread arguments."""
     binary = "./XFELVB"
     macro = "xray.mac"
@@ -134,11 +134,20 @@ def run_simulation(build_dir, threads, primaries, env_name="geant4"):
             
         print_progress_bar(0, primaries)
         
+        log_file = None
+        if log_path:
+            log_file = open(log_path, "w")
+            
         for line in process.stdout:
+            if log_file:
+                log_file.write(line)
             match = event_pattern.search(line)
             if match:
                 completed = int(match.group(1))
                 print_progress_bar(completed, primaries)
+                
+        if log_file:
+            log_file.close()
                 
         process.wait()
         print_progress_bar(primaries, primaries)
@@ -334,7 +343,8 @@ def main():
     generate_macro(build_dir, args.kapton, args.air, args.primaries)
     
     # 4. Run the Geant4 simulation
-    run_simulation(build_dir, args.threads, args.primaries, args.env)
+    log_path = os.path.join(output_dir, "simulation_stdout.txt")
+    run_simulation(build_dir, args.threads, args.primaries, args.env, log_path)
     
     # 5. Locate and process the ROOT output
     root_file = os.path.join(build_dir, "results.root")

@@ -5,7 +5,7 @@
 
 # Geometry parameters (PreInit state, before /run/initialize)
 /testem/det/setKaptonThickness 50.0 um
-/testem/det/setAirThickness 0.4 m
+/testem/det/setAirThickness 1.0 m
 
 /run/initialize
 
@@ -28,5 +28,5 @@
 /analysis/h1/set 12 100   -1.5  1.5     #positron polarization
 
 # Print progress periodically
-/run/printProgress 1
-/run/beamOn 100
+/run/printProgress 210000
+/run/beamOn 21000000

@@ -87,6 +87,7 @@ private:
 
   void BookHisto();
   void SaveHisto(G4int nevents);
+  void FinalizeHisto(G4int nevents);
 
   const G4ParticleDefinition* fGamma;
   const G4ParticleDefinition* fElectron;

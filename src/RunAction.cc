@@ -47,7 +47,6 @@
 
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
-#include "Randomize.hh"
 #include <iomanip>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -118,24 +117,17 @@ void RunAction::FillData(const G4ParticleDefinition* particle,
     fAnalysisManager->FillH1(id+2,phi,1.0);
     fAnalysisManager->FillH1(id+3,longitudinalPolarization,1.0);  
     
-    G4int totalEvents = G4RunManager::GetRunManager()->GetNumberOfEventsToBeProcessed();
-    G4double prescale = 1.0;
-    if (totalEvents > 200000) {
-      prescale = 200000.0 / totalEvents;
-    }
-    
-    if (G4UniformRand() < prescale) {
-    	// fill tuple for gamma
-    	fAnalysisManager->FillNtupleDColumn(1, 0, x/um);
-    	fAnalysisManager->FillNtupleDColumn(1, 1, y/um);
-    	fAnalysisManager->FillNtupleDColumn(1, 2, z/um);
-    	fAnalysisManager->FillNtupleDColumn(1, 3, px);
-    	fAnalysisManager->FillNtupleDColumn(1, 4, py);
-    	fAnalysisManager->FillNtupleDColumn(1, 5, pz);
-    	fAnalysisManager->FillNtupleDColumn(1, 6, kinEnergy/keV);
-    	fAnalysisManager->FillNtupleDColumn(1, 7, id);
-    	fAnalysisManager->AddNtupleRow(1);
-    }
+    // Write every hit unconditionally - no prescaling.
+    // Prescaling was silently dropping hits; correctness requires all hits recorded.
+    fAnalysisManager->FillNtupleDColumn(1, 0, x/um);
+    fAnalysisManager->FillNtupleDColumn(1, 1, y/um);
+    fAnalysisManager->FillNtupleDColumn(1, 2, z/um);
+    fAnalysisManager->FillNtupleDColumn(1, 3, px);
+    fAnalysisManager->FillNtupleDColumn(1, 4, py);
+    fAnalysisManager->FillNtupleDColumn(1, 5, pz);
+    fAnalysisManager->FillNtupleDColumn(1, 6, kinEnergy/keV);
+    fAnalysisManager->FillNtupleDColumn(1, 7, id);
+    fAnalysisManager->AddNtupleRow(1);
   }
 }
 
@@ -233,6 +225,22 @@ void RunAction::BookHisto()
 
 void RunAction::SaveHisto(G4int nevents)
 {
+  // Workers: only scale histograms locally.
+  // The master thread is responsible for the final Write() + CloseFile()
+  // after all worker ntuples have been merged into it.
+  if(fAnalysisManager && !isMaster) {
+    G4double norm = 1.0/G4double(nevents);
+    for(int i=0; i<12; ++i) {
+      fAnalysisManager->ScaleH1(i, norm);
+    }
+    // Do NOT call Write() or CloseFile() from worker threads.
+    // Doing so would close the file before other workers finish merging.
+  }
+}
+
+void RunAction::FinalizeHisto(G4int nevents)
+{
+  // Called only by the master thread to write and close the merged file.
   if(fAnalysisManager) {
     G4double norm = 1.0/G4double(nevents);
     for(int i=0; i<12; ++i) {
@@ -240,7 +248,7 @@ void RunAction::SaveHisto(G4int nevents)
     }
     fAnalysisManager->Write();
     fAnalysisManager->CloseFile();
-  } 
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -266,7 +274,8 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
 
   if (isMaster) {
     G4cout << "### Master EndOfRunAction: writing and merging histograms." << G4endl;
-    SaveHisto(NbOfEvents);
+    // Master finalizes the file (Write + CloseFile) after all workers merged.
+    FinalizeHisto(NbOfEvents);
     return;
   }
   
@@ -321,7 +330,7 @@ void RunAction::EndOfRunAction(const G4Run* aRun)
   fAnalysisManager->FillNtupleIColumn(2, 1, fNumHits);
   fAnalysisManager->AddNtupleRow(2);
 
-  // write out histograms  
+  // Scale worker histograms locally (does NOT call Write/CloseFile)
   SaveHisto(NbOfEvents);
 
   // show Rndm status

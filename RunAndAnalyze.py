@@ -126,21 +126,27 @@ def analyze_results(root_file, output_dir, save_basename, kapton_um, air_m, prim
         
     gamma_tree = file["Gamma;1"]
     
-    # Load the x, y, energy arrays
+    # Load the x, y, energy, and particle arrays
     x = gamma_tree["x"].array(library="np")
     y = gamma_tree["y"].array(library="np")
     energy = gamma_tree["energy"].array(library="np")
+    particle = gamma_tree["particle"].array(library="np")
+    
+    # Filter for gammas only (particle == 1) with energy > 0
+    gamma_idx = (particle == 1) & (energy > 0)
+    x = x[gamma_idx]
+    y = y[gamma_idx]
+    energy = energy[gamma_idx]
     
     # Save the compressed npz file
     npz_path = os.path.join(output_dir, f"{save_basename}.npz")
     np.savez_compressed(npz_path, x=x, y=y, e=energy)
     print(f">>> Saved compressed hits to: {npz_path}")
     
-    # Apply filters (energy > 0 as done in Jupyter notebook)
-    energy_idx = (energy > 0)
-    x_filtered = x[energy_idx]
-    y_filtered = y[energy_idx]
-    energy_filtered = energy[energy_idx]
+    # The arrays are already filtered for gammas
+    x_filtered = x
+    y_filtered = y
+    energy_filtered = energy
     
     # Statistics calculations
     if "Summary;1" in file:

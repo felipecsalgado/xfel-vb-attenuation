@@ -11,17 +11,17 @@ from matplotlib.colors import LogNorm
 from matplotlib.ticker import MultipleLocator
 from matplotlib import cm
 
-def get_run_prefix():
+def get_run_prefix(env_name="geant4"):
     """Returns the command prefix to run binaries/commands (e.g. micromamba run)."""
-    if "geant4" in os.environ.get("CONDA_PREFIX", ""):
+    if env_name in os.environ.get("CONDA_PREFIX", ""):
         return []
     if shutil.which("micromamba"):
-        return ["micromamba", "run", "-n", "geant4"]
+        return ["micromamba", "run", "-n", env_name]
     elif shutil.which("conda"):
-        return ["conda", "run", "-n", "geant4"]
+        return ["conda", "run", "-n", env_name]
     return []
 
-def build_project(workspace_dir):
+def build_project(workspace_dir, env_name="geant4"):
     """Ensures the C++ project is configured and compiled."""
     build_dir = os.path.join(workspace_dir, "build")
     os.makedirs(build_dir, exist_ok=True)
@@ -33,8 +33,8 @@ def build_project(workspace_dir):
     print(">>> Configuring and compiling Geant4 C++ project...")
     try:
         # Run cmake with prefix path to micromamba environment to find EXPAT and other libs
-        env_prefix = os.environ.get("CONDA_PREFIX", "/Users/felip/.local/share/mamba/envs/geant4")
-        prefix = get_run_prefix()
+        env_prefix = os.environ.get("CONDA_PREFIX", f"/Users/felip/.local/share/mamba/envs/{env_name}")
+        prefix = get_run_prefix(env_name)
         # Find local CPU thread count for make if threads is not passed (use min of 4 or CPU count)
         build_threads = max(1, os.cpu_count() - 1) if os.cpu_count() else 4
         subprocess.run(
@@ -103,13 +103,13 @@ def generate_macro(build_dir, kapton_um, air_m, primaries):
     print(f">>> Generated macro: {macro_path} and {root_macro_path}")
     return macro_path
 
-def run_simulation(build_dir, threads, primaries):
+def run_simulation(build_dir, threads, primaries, env_name="geant4"):
     """Runs the Geant4 simulation binary with the macro and thread arguments."""
     binary = "./XFELVB"
     macro = "xray.mac"
     print(f">>> Running simulation: {binary} {macro} {threads} (Cwd: {build_dir})")
     try:
-        prefix = get_run_prefix()
+        prefix = get_run_prefix(env_name)
         
         # Start the process with output piped
         process = subprocess.Popen(
@@ -308,6 +308,7 @@ def main():
     parser.add_argument("--threads", type=int, default=5, help="Number of threads (default: 5)")
     parser.add_argument("--primaries", type=float, default=2.1e9, help="Number of primary particles (default: 2.1e9)")
     parser.add_argument("--output-dir", type=str, default=None, help="Custom output directory")
+    parser.add_argument("--env", type=str, default="geant4", help="Conda/Micromamba environment name (default: geant4)")
     
     args = parser.parse_args()
     
@@ -315,7 +316,7 @@ def main():
     build_dir = os.path.join(workspace_dir, "build")
     
     # 1. Compile project
-    build_project(workspace_dir)
+    build_project(workspace_dir, args.env)
     
     # 2. Setup output folder and file naming
     if args.output_dir:
@@ -333,7 +334,7 @@ def main():
     generate_macro(build_dir, args.kapton, args.air, args.primaries)
     
     # 4. Run the Geant4 simulation
-    run_simulation(build_dir, args.threads, args.primaries)
+    run_simulation(build_dir, args.threads, args.primaries, args.env)
     
     # 5. Locate and process the ROOT output
     root_file = os.path.join(build_dir, "results.root")

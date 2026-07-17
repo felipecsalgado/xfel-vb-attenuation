@@ -343,7 +343,7 @@ def main():
     generate_macro(build_dir, args.kapton, args.air, args.primaries)
     
     # 4. Run the Geant4 simulation
-    log_path = os.path.join(output_dir, "simulation_stdout.txt")
+    log_path = os.path.join(output_dir, f"{save_basename}_stdout.txt")
     run_simulation(build_dir, args.threads, args.primaries, args.env, log_path)
     
     # 5. Locate and process the ROOT output

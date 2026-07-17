@@ -66,11 +66,12 @@ void SteppingAction::UserSteppingAction(const G4Step* aStep)
 const G4VPhysicalVolume* prePhysVol = prePoint->GetTouchableHandle()->GetVolume();
 const G4VPhysicalVolume* postPhysVol = endPoint->GetTouchableHandle()->GetVolume();
 
-  if (prePhysVol && postPhysVol) {
-    G4String preVol = prePhysVol->GetLogicalVolume()->GetName();
-    G4String postVol = postPhysVol->GetLogicalVolume()->GetName();
-    // Now safely compare or process
-    if (preVol == "GapVolume" && postVol == "ScreenVolume") {
+  if (postPhysVol && postPhysVol->GetLogicalVolume()->GetName() == "ScreenVolume") {
+    G4String preVol = "";
+    if (prePhysVol) {
+      preVol = prePhysVol->GetLogicalVolume()->GetName();
+    }
+    if (preVol != "ScreenVolume") {
         G4Track* aTrack = aStep->GetTrack();   
     const G4ParticleDefinition* part = aTrack->GetDynamicParticle()->GetDefinition();
     

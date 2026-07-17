@@ -84,7 +84,7 @@ def generate_macro(build_dir, kapton_um, air_m, primaries):
 /analysis/h1/set 12 100   -1.5  1.5     #positron polarization
 
 # Print progress periodically
-/run/printProgress {max(1, int(primaries // 10))}
+/run/printProgress {max(1, int(primaries // 100))}
 /run/beamOn {int(primaries)}
 """
     # Write to build folder
@@ -103,20 +103,55 @@ def generate_macro(build_dir, kapton_um, air_m, primaries):
     print(f">>> Generated macro: {macro_path} and {root_macro_path}")
     return macro_path
 
-def run_simulation(build_dir, threads):
+def run_simulation(build_dir, threads, primaries):
     """Runs the Geant4 simulation binary with the macro and thread arguments."""
     binary = "./XFELVB"
     macro = "xray.mac"
     print(f">>> Running simulation: {binary} {macro} {threads} (Cwd: {build_dir})")
     try:
         prefix = get_run_prefix()
-        subprocess.run(
+        
+        # Start the process with output piped
+        process = subprocess.Popen(
             prefix + [binary, macro, str(threads)],
-            cwd=build_dir, check=True
+            cwd=build_dir,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1
         )
-        print(">>> Simulation run completed successfully.")
+        
+        import re
+        event_pattern = re.compile(r"--> Event\s+(\d+)\s+starts")
+        
+        # Simple text progress bar function
+        def print_progress_bar(completed, total):
+            percent = (completed / total) * 100.0
+            filled_length = int(50 * completed // total)
+            bar = '█' * filled_length + '-' * (50 - filled_length)
+            sys.stdout.write(f"\rProgress: |{bar}| {percent:.1f}% ({completed:,}/{total:,})")
+            sys.stdout.flush()
+            
+        print_progress_bar(0, primaries)
+        
+        for line in process.stdout:
+            match = event_pattern.search(line)
+            if match:
+                completed = int(match.group(1))
+                print_progress_bar(completed, primaries)
+                
+        process.wait()
+        print_progress_bar(primaries, primaries)
+        print("\n>>> Simulation run completed successfully.")
+        
+        if process.returncode != 0:
+            raise subprocess.CalledProcessError(process.returncode, prefix + [binary, macro, str(threads)])
+            
     except subprocess.CalledProcessError as e:
-        print(f"ERROR: Simulation failed: {e}")
+        print(f"\nERROR: Simulation failed: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"\nERROR: Running simulation failed: {e}")
         sys.exit(1)
 
 def analyze_results(root_file, output_dir, save_basename, kapton_um, air_m, primaries):
@@ -298,7 +333,7 @@ def main():
     generate_macro(build_dir, args.kapton, args.air, args.primaries)
     
     # 4. Run the Geant4 simulation
-    run_simulation(build_dir, args.threads)
+    run_simulation(build_dir, args.threads, args.primaries)
     
     # 5. Locate and process the ROOT output
     root_file = os.path.join(build_dir, "results.root")

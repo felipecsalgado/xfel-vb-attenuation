@@ -28,5 +28,5 @@
 /analysis/h1/set 12 100   -1.5  1.5     #positron polarization
 
 # Print progress periodically
-/run/printProgress 1000
-/run/beamOn 100000
+/run/printProgress 1
+/run/beamOn 100

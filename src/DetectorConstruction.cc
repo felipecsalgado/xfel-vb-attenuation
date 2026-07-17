@@ -168,10 +168,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                              0,                          //mother volume
                              false,                      //no boolean operation
                              0);                         //copy number
-  G4double kaptonXY = 10*cm;
+  G4double kaptonXY = 1*m;
   G4double kaptonZ = fKaptonThickness;
   G4double GapZ = fAirThickness;
-  G4double GapXY = 10*cm;
+  G4double GapXY = 1*m;
 
   G4LogicalVolume* lKapton = nullptr;
   if (kaptonZ > 0) {
@@ -209,14 +209,14 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   G4PVPlacement* fGap = new G4PVPlacement(0,                             //no rotation
                             		G4ThreeVector(0, 0, 0), //location
                             		lGap,                          //its logical volume
-                           		"GapPlacement",    //its name
+                            		"GapPlacement",    //its name
  		                        lWorld,                        //its mother  volume
                  		        false,                         //no boolean operation
                             		0);                            //copy number
                             		
                            		
   // Screen Volume
-  G4double ScreenXY = 10*cm;
+  G4double ScreenXY = 1*m;
   G4double ScreenZ = 10*um; 
   
   G4Box*

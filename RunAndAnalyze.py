@@ -87,10 +87,20 @@ def generate_macro(build_dir, kapton_um, air_m, primaries):
 /run/printProgress {max(1, int(primaries // 10))}
 /run/beamOn {int(primaries)}
 """
+    # Write to build folder
     macro_path = os.path.join(build_dir, "xray.mac")
     with open(macro_path, "w") as f:
         f.write(macro_content.strip() + "\n")
-    print(f">>> Generated macro: {macro_path}")
+        
+    # Also copy/write to the workspace root directory so the user sees the updated parameters
+    root_macro_path = os.path.join(os.path.dirname(build_dir), "xray.mac")
+    try:
+        with open(root_macro_path, "w") as f:
+            f.write(macro_content.strip() + "\n")
+    except Exception as e:
+        print(f"WARNING: Could not update root xray.mac: {e}")
+        
+    print(f">>> Generated macro: {macro_path} and {root_macro_path}")
     return macro_path
 
 def run_simulation(build_dir, threads):
